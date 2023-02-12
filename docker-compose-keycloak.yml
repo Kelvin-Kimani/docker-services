@@ -1,0 +1,38 @@
+version: "3"
+services:
+  postgresql:
+    image: docker.io/bitnami/postgresql:13
+    container_name: keycloak-postgres
+    ports:
+      - "5435:5432"
+    networks:
+      - keycloak-net
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - POSTGRESQL_USERNAME=bn_keycloak
+      - POSTGRESQL_DATABASE=bitnami_keycloak
+    volumes:
+      - postgresql_13_data:/bitnami/postgresql
+
+  keycloak:
+    image: bitnami/keycloak:latest
+    container_name: keycloak
+    ports:
+      - "8888:8080"
+    networks:
+      - keycloak-net
+    environment:
+      - KEYCLOAK_CREATE_ADMIN_USER=true
+      - KEYCLOAK_ADMIN_USER=iam-admin
+      - KEYCLOAK_ADMIN_PASSWORD=iam-password
+      - KEYCLOAK_CACHE_OWNERS_COUNT=3
+      - KEYCLOAK_AUTH_CACHE_OWNERS_COUNT=3
+    depends_on:
+      - postgresql
+
+volumes:
+  postgresql_13_data:
+    driver: local
+networks:
+  keycloak-net:
+    driver: bridge
