@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: delete-schemas-job
+  namespace: da-remit
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: delete-schemas
+        image: postgres:14
+        env:
+        - name: PGDATABASE
+          value: fx-service
+        - name: PGHOST
+          value: db-server
+        - name: PGPORT
+          value: "8210"
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: fx-service-provider
+              key: DB_USERNAME
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fx-service-provider
+              key: DB_PASSWORD
+        command:
+        - psql
+        - "-c"
+        - "drop schema if exists public cascade; create schema public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;"
+  backoffLimit: 3
+
